@@ -7,11 +7,6 @@ const port = 3000;
 
 app.use(bodyParser.json());
 
-const passwords = {
-    mail1 : '123',
-    mail2 : '213'
-}
-
 app.post('/send-email', async (req, res) => {
     const { from, to, subject, text } = req.body;
     
@@ -20,14 +15,13 @@ app.post('/send-email', async (req, res) => {
         port: 587,
         secure: false,
         auth: {
-            user: from || 'yauheni.test123@gmail.com',
-            //pass: passwords[from], 
-            pass: 'mpupjljhfikonpvt'
+            user: 'yauheni.test123@gmail.com',
+            pass: 'avjdvihlyzsnpihj'
         },
     });
 
     let mailOptions = {
-        from: from || 'yauheni.test123@gmail.com',
+        from: 'yauheni.test123@gmail.com',
         to: to, 
         subject: subject, 
         text: text,
