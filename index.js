@@ -1,47 +1,45 @@
-const express = require('express');
 const nodemailer = require('nodemailer');
-const bodyParser = require('body-parser');
-const cors = require('cors');
-const app = express();
-const port = 3000;
+const { google } = require('googleapis');
 
-app.use(bodyParser.json());
-app.use(cors())
-app.post('/send-email', async (req, res) => {
-    const { from, to, subject, text } = req.body;
-    
-    let transporter = nodemailer.createTransport({
-        host: 'smtp.gmail.com',
-        port: 587,
-        secure: false,
-        auth: {
-            user: 'yauheni.test123@gmail.com',
-            pass: 'avjdvihlyzsnpihj'
-        },
+const CLIENT_ID = '352377907218-d1ctco2o50a10v45hdeh5v6rakdfs0fb.apps.googleusercontent.com';
+const CLIENT_SECRET = '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';
+const REDIRECT_URI = 'https://developers.google.com/oauthplayground';
+const REFRESH_TOKEN = '1//04AHjwghZSZAYCgYIARAAGAQSNwF-L9IrdSbWBhLiXBmKn84LfD7rWjqzHE8OArQ_cYniSLf4qzCGPNh7wf8HOmWM3XZJ7ejsrf8';
+
+const oAuth2Client = new google.auth.OAuth2(CLIENT_ID, CLIENT_SECRET, REDIRECT_URI);
+oAuth2Client.setCredentials({ refresh_token: REFRESH_TOKEN });
+
+async function sendMail() {
+  try {
+    const accessToken = await oAuth2Client.getAccessToken();
+
+    const transport = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        type: 'OAuth2',
+        user: 'paul@martlet-express.com',
+        clientId: CLIENT_ID,
+        clientSecret: CLIENT_SECRET,
+        refreshToken: REFRESH_TOKEN,
+        accessToken: accessToken,
+      },
     });
 
-    let mailOptions = {
-        from: 'yauheni.test123@gmail.com',
-        to: to, 
-        subject: subject, 
-        text: text,
-        headers: {
-        'List-Unsubscribe': '<mailto:unsubscribe@example.com?subject=unsubscribe>', // Unsubscribe header
-    }
+    const mailOptions = {
+      from: 'YOUR NAME <your-email@gmail.com>',
+      to: 'vinokurovartyom@gmail.com',
+      subject: 'Test Email',
+      text: 'Hello from Node.js',
+      html: '<h1>Hello from Node.js</h1>',
     };
 
-    try {
-        let info = await transporter.sendMail(mailOptions);
-        console.log('Message sent: %s', info.messageId);
+    const result = await transport.sendMail(mailOptions);
+    return result;
+  } catch (error) {
+    return error;
+  }
+}
 
-        res.status(200).send({ message: 'Email sent successfully!', messageId: info.messageId });
-    } catch (error) {
-        console.error('Error sending email:', error);
-        res.status(500).send({ error: 'Failed to send email' });
-    }
-});
-
-// Start the server
-app.listen(port, () => {
-    console.log(`Server is running on http://localhost:${port}`);
-});
+sendMail()
+  .then((result) => console.log('Email sent...', result))
+  .catch((error) => console.log(error.message));
